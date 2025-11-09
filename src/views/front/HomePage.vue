@@ -742,8 +742,8 @@ const handleTabClick = (index) => {
   }
 }
 
-/* 1300px以下断点 - 左侧标签移到上方，卡片一行显示一个 */
-@media (max-width: 1300px) {
+/* 992px以下断点 - 左侧标签移到上方，卡片一行显示一个 */
+@media (max-width: 992px) {
   .recom {
     flex-direction: column;
     max-width: 100%;
@@ -777,6 +777,31 @@ const handleTabClick = (index) => {
     width: 100%;
     margin-bottom: 0;
     margin: 0;
+  }
+}
+
+/* 确保在中等屏幕上仍保持左右布局 */
+@media (min-width: 993px) {
+  .recom {
+    flex-direction: row;
+  }
+  .tap {
+    width: 22%;
+    min-height: 450px;
+    border-right: 1px solid #ed9c1b;
+    flex-direction: column;
+  }
+  .show {
+    width: 78%;
+    padding: 30px;
+  }
+  .item {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  .card {
+    flex: 0 0 calc(32% - 15px);
+    margin: 0 8px;
   }
 }
 

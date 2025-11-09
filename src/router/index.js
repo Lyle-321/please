@@ -88,6 +88,16 @@ const router = createRouter({
           name: 'UserManagement',
           component: () => import('@/views/admin/UserAdmin/UserAdmin.vue'),
         },
+        {
+          path: '/ClassificationManagement',
+          name: 'ClassificationManagement',
+          component: () => import('@/views/admin/ClassificationManagement.vue/ClassificationManagement.vue'),
+        },
+        {
+          path: '/AddProduct',
+          name: 'AddProduct',
+          component: () => import('@/views/admin/brand/AddProduct.vue'),
+        },
       ],
     },
   ],

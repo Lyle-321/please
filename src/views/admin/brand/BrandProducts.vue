@@ -48,17 +48,17 @@ const tableData = ref([
     <div class="content-area">
       <!-- 产品列表将在这里显示 -->
       <!-- 筛选组件 -->
-      <FilterComponent> 添加分类 </FilterComponent>
+      <FilterComponent> 添加产品 </FilterComponent>
     </div>
     <!-- 产品列表将在这里显示 -->
     <div class="product-list" style="padding: 10px">
       <!-- 产品列表将在这里显示 -->
-      <el-table :data="tableData" border style="width: 100%">
-        <el-table-column prop="name" label="产品名字" width="180" />
-        <el-table-column prop="image" label="产品图片" width="180" />
-        <el-table-column prop="description" label="产品描述" width="250" />
-        <el-table-column prop="category" label="产品分类" width="180" />
-        <el-table-column label="操作" width="220">
+      <el-table :data="tableData" border style="width: 100%" fit>
+        <el-table-column prop="name" label="产品名字" min-width="120" />
+        <el-table-column prop="image" label="产品图片" min-width="100" />
+        <el-table-column prop="description" label="产品描述" min-width="200" />
+        <el-table-column prop="category" label="产品分类" min-width="100" />
+        <el-table-column label="操作" min-width="160">
           <template #default="scope">
             <el-button type="primary">编辑</el-button>
             <el-button>删除</el-button>
@@ -101,25 +101,20 @@ h2 {
   display: block;
 }
 
-/* 响应式表格样式 - 加强宽度控制 */
-.product-list > .el-table,
-.product-list > .el-table__header-wrapper,
-.product-list > .el-table__body-wrapper,
-.product-list > .el-table__footer-wrapper {
+/* 优化表格宽度控制 */
+.product-list > .el-table {
   width: 100% !important;
   box-sizing: border-box !important;
+  table-layout: fixed;
 }
 
-/* 强制表格占满容器 */
-.product-list :deep(.el-table),
-.product-list :deep(.el-table__header),
-.product-list :deep(.el-table__body),
-.product-list :deep(.el-table__footer),
+/* 确保表格内容正常显示 */
 .product-list :deep(.el-table__header th),
 .product-list :deep(.el-table__body td) {
-  width: 100% !important;
-  min-width: 100% !important;
   box-sizing: border-box !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 增加表格行高 */
@@ -145,6 +140,15 @@ h2 {
 }
 
 /* 响应式设计 */
+@media (max-width: 1200px) {
+  .product-list :deep(.el-table__header th),
+  .product-list :deep(.el-table__body td) {
+    font-size: 14px;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}
+
 @media (max-width: 768px) {
   .brand-products-container {
     padding: 10px;
@@ -153,6 +157,22 @@ h2 {
   .product-list {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    border-radius: 4px;
+  }
+  
+  /* 移动设备上优化表格显示 */
+  .product-list :deep(.el-table__header th),
+  .product-list :deep(.el-table__body td) {
+    font-size: 12px;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+    height: 50px !important;
+    min-height: 50px !important;
+  }
+  
+  .product-list :deep(.el-button) {
+    padding: 6px 12px;
+    font-size: 12px;
   }
 }
 </style>

@@ -11,7 +11,7 @@ const expandedMenu = ref('')
 const sidebarVisible = ref(false)
 
 // 当前选中的主菜单项
-const activeMainItem = ref('AdminHome')
+const activeMainItem = ref(null)
 
 // 当前选中的子菜单项
 const activeSubItem = ref('')
@@ -55,9 +55,10 @@ const handleSubItemClick = (path, menuName) => {
 const updateActiveMenuItem = () => {
   const currentPath = route.path
 
-  // 创建路由路径到菜单项的映射
+  // 创建路由路径到菜单项的映射，包含所有菜单项
   const pathToMenuItem = {
     '/AdminHome': 'AdminHome',
+    '/ClassificationManagement': 'ClassificationManagement',
     '/BrandProducts': 'product',
     '/ConsultationManagement': '咨询中心管理',
     '/AnnouncementManagement': '广告管理',
@@ -65,8 +66,11 @@ const updateActiveMenuItem = () => {
     '/UserManagement': '用户管理',
   }
 
-  if (pathToMenuItem[currentPath]) {
-    activeMainItem.value = pathToMenuItem[currentPath]
+  // 查找匹配的菜单项
+  const matchedMenuItem = pathToMenuItem[currentPath]
+  
+  if (matchedMenuItem) {
+    activeMainItem.value = matchedMenuItem
     activeSubItem.value = ''
 
     // 特殊处理产品管理页面
@@ -111,6 +115,14 @@ onMounted(() => {
         >
           首页
         </div>
+        <div
+          class="item"
+          :class="{ active: activeMainItem === 'ClassificationManagement' }"
+          @click="handleMainItemClick('/ClassificationManagement', 'ClassificationManagement')"
+        >
+          分类管理
+        </div>
+
         <div
           class="item parent-item"
           :class="{ active: activeMainItem === 'product' }"
@@ -214,7 +226,7 @@ onMounted(() => {
 }
 
 .sidebar {
-  width: 14rem;
+  width: 10rem;
   height: 100%;
   background-color: #1f2937;
   color: #fff;
