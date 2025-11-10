@@ -1,7 +1,9 @@
 <template>
   <div class="product-detail-container">
-    <h2 class="page-title">添加产品</h2>
-    
+    <div class="pagehead">
+      <h2 class="page-title">添加产品</h2>
+      <el-button type="primary" @click="handleBackClick">返回</el-button>      
+    </div>
     <!-- 表单区域 -->
     <el-form
       ref="productFormRef"
@@ -203,6 +205,13 @@ onUnmounted(() => {
 </script>
   
   <style scoped>
+  .pagehead {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
   .product-detail-container {
     padding: 20px;
     background-color: #f5f7fa;

@@ -98,6 +98,11 @@ const router = createRouter({
           name: 'AddProduct',
           component: () => import('@/views/admin/brand/AddProduct.vue'),
         },
+        {
+          path: '/ArticleAdmin',
+          name: 'ArticleAdmin',
+          component: () => import('@/views/admin/ArticleAdmin/ArticleAdmin.vue'),
+        },
       ],
     },
   ],

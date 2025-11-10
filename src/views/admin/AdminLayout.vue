@@ -156,8 +156,8 @@ onMounted(() => {
         </div>
         <div
           class="item"
-          :class="{ active: activeMainItem === '咨询中心管理' }"
-          @click="handleMainItemClick('/ConsultationManagement', '咨询中心管理')"
+          :class="{ active: activeMainItem === 'ArticleAdmin' }"
+          @click="handleMainItemClick('/ArticleAdmin', 'ArticleAdmin')"
         >
           咨讯中心管理
         </div>

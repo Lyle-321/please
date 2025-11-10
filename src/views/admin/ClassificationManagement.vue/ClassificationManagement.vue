@@ -1,3 +1,129 @@
+<script setup>
+import {ref} from 'vue'
+import { updateProductClassification,addProductClassification,deleteProductClassification,getProductClassificationPage } from '@/api/Product'
+
+//分类列表
+const categoryList = ref([])
+
+// 弹窗控制和表单数据
+const showAddDialog = ref(false)
+const editingCategory = ref(null)
+const formData = ref({
+  name: '',
+  brandId: ''
+})
+const loading = ref(false)
+
+// 关闭弹窗的方法
+const closeDialog = () => {
+  showAddDialog.value = false
+  formData.value = { name: '', brandId: '' }
+  editingCategory.value = null
+}
+
+// 分页
+const page = ref({
+  pageNum: 1,//当前页码
+  pageSize: 20,//每页显示条数
+
+})
+// 总数
+const total = ref({})
+// 当前页码
+const pageCurrent = ref({})
+
+
+
+
+const getCategoryList = async () => {
+  try {
+    // const res = await getProductClassification()
+    const res = await getProductClassificationPage(page.value.pageNum, page.value.pageSize)
+    categoryList.value = res.data
+    total.value = res.data.total
+    pageCurrent.value = res.data.current
+    console.log('获取分类列表成功:', res)
+  } catch (error) {
+    console.error('获取分类列表失败:', error)
+  }
+}
+
+// 打开编辑弹窗并回显数据
+const onEditChannel = (row) => {
+  console.log('编辑分类:', row)
+  editingCategory.value = row.id
+  formData.value = {
+    id: row.id,
+    name: row.name,
+    brandId: row.brandId
+  }
+  showAddDialog.value = true
+}
+
+// 删除分类
+const onDelChannel = async (row) => {
+  console.log('删除分类:', row)
+  try {
+    // 使用confirm对话框确认删除
+    if (confirm(`确定要删除分类"${row.name}"吗？`)) {
+      loading.value = true
+      // 调用删除API
+      const res = await deleteProductClassification(row.id)
+      console.log('删除分类成功:', res)
+      alert('分类删除成功')
+      // 重新加载分类列表
+      getCategoryList()
+    }
+  } catch (error) {
+    console.error('删除分类失败:', error)
+    alert('删除分类失败，请重试')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 保存分类
+const saveCategory = async () => {
+  // 表单验证
+  if (!formData.value.name.trim()) {
+    alert('请输入分类名称')
+    return
+  }
+  
+  loading.value = true
+  try {
+    console.log('保存分类:', formData.value)
+    // 区分新增和编辑操作
+    if (editingCategory.value) {
+      // 编辑操作 - 调用更新API
+      const res = await updateProductClassification(formData.value)
+      console.log('更新分类成功:', res)
+      alert('分类更新成功')
+    } else {
+      // 新增操作 - 调用新增API
+      const res = await addProductClassification(formData.value)
+      console.log('新增分类成功:', res)
+      alert('分类添加成功')
+    }
+    
+    // 关闭弹窗并重置表单
+    showAddDialog.value = false
+    // 重置表单
+    formData.value = { name: '', brandId: '' }
+    editingCategory.value = null
+    // 重新加载分类列表
+    getCategoryList()
+  } catch (error) {
+    console.error('保存分类失败:', error)
+    alert('保存分类失败，请重试')
+  } finally {
+    loading.value = false
+  }
+}
+
+getCategoryList()
+</script>
+
 <template>
   <div class="classification-management">
     <h1>分类管理</h1>
@@ -18,13 +144,9 @@
           clearable
           class="brand-select"
         >
-          <el-option label="全部品牌" value="" />
-          <el-option 
-            v-for="brand in brandList" 
-            :key="brand.id" 
-            :label="brand.name" 
-            :value="brand.id"
-          />
+          <el-option label="王殿" value="1" />
+          <el-option label="百姓粽" value="2" />
+          <el-option label="铭记家点心" value="3" />
         </el-select>
       </div>
       <div class="action-section">
@@ -35,40 +157,37 @@
     </div>
     
     <!-- 下面盒子：分类表单 -->
-    <div class="table-box">
-      <el-table :data="filteredCategories" border style="width: 100%" fit>
+    <div class="table-box" >
+      <el-table :data="categoryList.records"  style="width: 100%" fit>
         <el-table-column prop="id" label="分类ID" width="80" />
-        <el-table-column prop="name" label="分类名字" min-width="150" />
-        <el-table-column prop="brandId" label="分类品牌" min-width="120">
-          <template #default="scope">
-            {{ getBrandName(scope.row.brandId) }}
+        <el-table-column prop="name" label="分类名字" min-width="50" />
+        <el-table-column prop="brandId" label="分类品牌" min-width="80">
+          <template #default="{ row }">
+            <span v-if="row.brandId === 1 || row.brandId === '1'">王殿</span>
+            <span v-else-if="row.brandId === 2 || row.brandId === '2'">百姓粽</span>
+            <span v-else-if="row.brandId === 3 || row.brandId === '3'">铭记家点心</span>
+            <span v-else>{{ row.brandId || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180">
-          <template #default="scope">
-            <el-button type="primary" size="small" @click="editCategory(scope.row)">编辑</el-button>
-            <el-button size="small" @click="deleteCategory(scope.row.id)">删除</el-button>
-          </template>
-        </el-table-column>
+           <el-table-column label="操作" width="120" align="center">
+             <template #default="{row, $index}">
+               <div class="action-buttons">
+                 <el-button @click="onEditChannel(row, $index)"  class="action-btn">编辑</el-button>
+                 <el-button @click="onDelChannel(row, $index)"  class="action-btn">删除</el-button>
+               </div>
+             </template>
+           </el-table-column>
       </el-table>
     </div>
     
-    <!-- 分页组件 -->
-    <div class="pagination-section">
-      <PaginationAdmin 
-        :total="categoryList.length"
-        :page-size="pageSize"
-        :current-page="currentPage"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
-    </div>
+
     
     <!-- 添加/编辑分类对话框 -->
     <el-dialog
       v-model="showAddDialog"
       :title="editingCategory ? '编辑分类' : '添加分类'"
       width="500px"
+      @close="closeDialog"
     >
       <el-form :model="formData" label-width="100px">
         <el-form-item label="分类名称">
@@ -76,160 +195,33 @@
         </el-form-item>
         <el-form-item label="分类品牌">
           <el-select v-model="formData.brandId" placeholder="请选择分类品牌">
-            <el-option 
-              v-for="brand in brandList" 
-              :key="brand.id" 
-              :label="brand.name" 
-              :value="brand.id"
-            />
+            <el-option label="王殿" value="1" />
+            <el-option label="百姓粽" value="2" />
+            <el-option label="铭记家点心" value="3" />
           </el-select>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showAddDialog = false">取消</el-button>
-        <el-button type="primary" @click="saveCategory">保存</el-button>
+        <el-button @click="closeDialog">取消</el-button>
+        <el-button type="primary" @click="saveCategory" :loading="loading">确定</el-button>
       </template>
     </el-dialog>
+    <!-- <el-pagination
+      v-model:current-page="page.value.pageNum"
+      v-model:page-size="page.value.pageSize"
+      :page-sizes="[10, 20, 30, 40]"
+      :size="size"
+      :disabled="disabled"
+      :background="background"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="total"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    /> -->
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
-import PaginationAdmin from '@/component/admin/PaginationAdmin.vue'
-import { ElMessageBox, ElMessage } from 'element-plus'
 
-// 响应式数据
-const searchKeyword = ref('')
-const selectedBrand = ref('')
-const showAddDialog = ref(false)
-const editingCategory = ref(null)
-const currentPage = ref(1)
-const pageSize = ref(100)
-
-// 品牌列表
-const brandList = ref([
-  { id: 1, name: '品牌A' },
-  { id: 2, name: '品牌B' },
-  { id: 3, name: '品牌C' },
-  { id: 4, name: '品牌D' }
-])
-
-// 分类列表数据
-const categoryList = ref([
-  { id: 1, name: '食品分类1', brandId: 1 },
-  { id: 2, name: '食品分类2', brandId: 1 },
-  { id: 3, name: '食品分类3', brandId: 2 },
-  { id: 4, name: '食品分类4', brandId: 3 },
-  { id: 5, name: '食品分类5', brandId: 2 },
-  { id: 6, name: '食品分类6', brandId: 4 },
-  { id: 7, name: '食品分类7', brandId: 1 },
-  { id: 8, name: '食品分类8', brandId: 3 }
-])
-
-// 表单数据
-const formData = ref({
-  name: '',
-  brandId: ''
-})
-
-// 计算属性：筛选后的分类列表
-const filteredCategories = computed(() => {
-  let result = categoryList.value
-  
-  // 根据关键词筛选
-  if (searchKeyword.value) {
-    const keyword = searchKeyword.value.toLowerCase()
-    result = result.filter(cat => cat.name.toLowerCase().includes(keyword))
-  }
-  
-  // 根据品牌筛选
-  if (selectedBrand.value) {
-    result = result.filter(cat => cat.brandId === selectedBrand.value)
-  }
-  
-  // 分页处理
-  const startIndex = (currentPage.value - 1) * pageSize.value
-  const endIndex = startIndex + pageSize.value
-  return result.slice(startIndex, endIndex)
-})
-
-// 获取品牌名称
-const getBrandName = (brandId) => {
-  const brand = brandList.value.find(b => b.id === brandId)
-  return brand ? brand.name : '未设置'
-}
-
-// 编辑分类
-const editCategory = (category) => {
-  editingCategory.value = { ...category }
-  formData.value = { ...category }
-  showAddDialog.value = true
-}
-
-// 删除分类
-const deleteCategory = (id) => {
-  ElMessageBox.confirm('确定要删除这个分类吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
-    const index = categoryList.value.findIndex(cat => cat.id === id)
-    if (index !== -1) {
-      categoryList.value.splice(index, 1)
-      ElMessage.success('删除成功')
-    }
-  }).catch(() => {
-    ElMessage.info('已取消删除')
-  })
-}
-
-// 保存分类
-const saveCategory = () => {
-  if (!formData.value.name) {
-    ElMessage.warning('请输入分类名称')
-    return
-  }
-  
-  if (editingCategory.value) {
-    // 编辑模式
-    const index = categoryList.value.findIndex(cat => cat.id === editingCategory.value.id)
-    if (index !== -1) {
-      categoryList.value[index] = { ...formData.value }
-      ElMessage.success('更新成功')
-    }
-  } else {
-    // 添加模式
-    const newId = Math.max(...categoryList.value.map(cat => cat.id), 0) + 1
-    categoryList.value.push({
-      id: newId,
-      ...formData.value
-    })
-    ElMessage.success('添加成功')
-  }
-  
-  showAddDialog.value = false
-  resetForm()
-}
-
-// 重置表单
-const resetForm = () => {
-  formData.value = {
-    name: '',
-    brandId: ''
-  }
-  editingCategory.value = null
-}
-
-// 分页相关方法
-const handleSizeChange = (val) => {
-  pageSize.value = val
-  currentPage.value = 1 // 重置为第一页
-}
-
-const handleCurrentChange = (val) => {
-  currentPage.value = val
-}
-</script>
 
 <style scoped>
 .classification-management {
@@ -311,5 +303,16 @@ h1 {
   .pagination-section {
     padding: 0 10px 15px;
   }
+}
+
+/* 操作按钮容器样式 */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+:deep(.action-btn) {
+  padding: 0 12px;
 }
 </style>

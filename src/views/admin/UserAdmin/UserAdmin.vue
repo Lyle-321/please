@@ -1,32 +1,83 @@
 <script setup>
-import { ref } from 'vue'
-import PaginationAdmin from '@/component/admin/PaginationAdmin.vue'
+import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { getUserList } from '@/api/User.js'
 
+// 响应式数据
 const searchText = ref('')
+const tableData = ref([])
+const loading = ref(false)
 
-// 模拟用户数据
-const tableData = ref([
-  { id: 1, username: 'user1', email: 'user1@example.com', registerTime: '2024-01-01', status: 'active' },
-  { id: 2, username: 'user2', email: 'user2@example.com', registerTime: '2024-01-02', status: 'active' },
-  { id: 3, username: 'user3', email: 'user3@example.com', registerTime: '2024-01-03', status: 'inactive' },
-  { id: 4, username: 'user4', email: 'user4@example.com', registerTime: '2024-01-04', status: 'active' },
-  { id: 5, username: 'user5', email: 'user5@example.com', registerTime: '2024-01-05', status: 'active' }
-])
+// 分页信息
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 
+// 加载用户列表
+const loadUserList = async () => {
+  loading.value = true
+  try {
+    // 确保传入必需的参数
+    const params = {
+      pageNum: currentPage.value,
+      pageSize: pageSize.value
+    }
+    
+    // 如果有搜索文本，添加到参数中
+    if (searchText.value.trim()) {
+      params.username = searchText.value.trim()
+    }
+    
+    const response = await getUserList(params)
+    console.log('获取用户列表响应:', response)
+    if (response.code === '200' && response.data) {
+      tableData.value = response.data.records || []
+      total.value = response.data.total || 0
+    } else {
+      ElMessage.error('获取用户列表失败')
+    }
+  } catch (error) {
+    console.error('获取用户列表错误:', error)
+    ElMessage.error('获取用户列表时发生错误')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 搜索功能
 const handleSearch = () => {
-  console.log('搜索内容:', searchText.value)
-  // 这里可以添加搜索逻辑
+  currentPage.value = 1 // 重置到第一页
+  loadUserList()
 }
 
-const handleEdit = (user) => {
-  console.log('编辑用户:', user)
-  // 这里可以添加编辑逻辑
+// 分页变更
+const handleCurrentChange = (val) => {
+  currentPage.value = val
+  loadUserList()
 }
 
-const handleDelete = (user) => {
-  console.log('删除用户:', user)
-  // 这里可以添加删除逻辑
+const handleSizeChange = (val) => {
+  pageSize.value = val
+  currentPage.value = 1 // 重置到第一页
+  loadUserList()
 }
+
+// 查看用户
+const handleView = (row) => {
+  ElMessage.info(`查看用户: ${row.username}`)
+  // 这里可以添加查看用户详情的逻辑
+}
+
+// 删除用户
+const handleDelete = (row) => {
+  ElMessage.warning(`删除用户: ${row.username}`)
+  // 这里可以添加删除用户的逻辑
+}
+
+// 初始加载
+onMounted(() => {
+  loadUserList()
+})
 </script>
 
 <template>
@@ -75,22 +126,38 @@ const handleDelete = (user) => {
     <!-- 表单区域：用户表格 -->
     <div class="user-list" style="padding: 10px;">
       <!-- 用户列表 -->
-      <el-table :data="tableData" border fit style="width: 100%;">
-        <el-table-column prop="id" label="用户ID" width="120" />
-        <el-table-column prop="username" label="用户名" />
-        <el-table-column prop="registerTime" label="注册时间" width="120" />
+      <el-table 
+        :data="tableData" 
+        border 
+        fit 
+        style="width: 100%;"
+        v-loading="loading"
+      >
+        <el-table-column type="index" label="序号" width="80" />
+        <el-table-column prop="username" label="用户名" width="180" />
+        <el-table-column prop="email" label="邮箱" min-width="200" />
         <el-table-column label="操作" width="180" align="center">
           <template #default="scope">
             <div style="display: flex; justify-content: center; gap: 10px;">
-              <el-button type="primary">查看</el-button>
-              <el-button>删除</el-button>
+              <el-button type="primary" @click="handleView(scope.row)">查看</el-button>
+              <el-button type="danger" @click="handleDelete(scope.row)">删除</el-button>
             </div>
           </template>
         </el-table-column>
       </el-table>
       
       <!-- 分页组件 -->
-      <PaginationAdmin />
+      <div class="pagination-container" style="margin-top: 20px; display: flex; justify-content: flex-end;">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[5, 10, 20, 50]"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
     </div>
   </div>
 </template>

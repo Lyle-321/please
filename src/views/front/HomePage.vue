@@ -291,7 +291,7 @@ const handleTabClick = (index) => {
             百姓粽
           </div>
           <div class="box" :class="{ active: activeTab === 2 }" @click="handleTabClick(2)">
-            remember家点心
+            铭记家点心
           </div>
         </div>
         <!-- 右侧产品展示 -->
@@ -339,18 +339,18 @@ const handleTabClick = (index) => {
           <!-- remember家点心产品 -->
           <div class="item" v-else-if="activeTab === 2">
             <div class="card">
-              <img src="@/assets/ping.jpg" alt="remember家奶黄包" />
-              <h3>remember家奶黄包</h3>
+              <img src="@/assets/ping.jpg" alt="铭记家奶黄包" />
+              <h3>铭记家奶黄包</h3>
               <p>软糯外皮，香甜奶黄馅，口感丰富。</p>
             </div>
             <div class="card">
-              <img src="@/assets/ping.jpg" alt="remember家流沙包" />
-              <h3>remember家流沙包</h3>
+              <img src="@/assets/ping.jpg" alt="铭记家流沙包" />
+              <h3>铭记家流沙包</h3>
               <p>口感绵密，咸甜适中，经典粤式点心。</p>
             </div>
             <div class="card">
-              <img src="@/assets/ping.jpg" alt="remember家叉烧包" />
-              <h3>remember家叉烧包</h3>
+              <img src="@/assets/ping.jpg" alt="铭记家叉烧包" />
+              <h3>铭记家叉烧包</h3> 
               <p>精选叉烧，肉质鲜嫩，风味十足。</p>
             </div>
           </div>
